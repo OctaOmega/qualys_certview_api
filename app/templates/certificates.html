@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Certificates</h3>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="/certificates/export.csv">Export CSV</a>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <form method="GET" class="row g-2">
+      <div class="col-md-3">
+        <label class="form-label">certhash</label>
+        <input class="form-control" name="certhash" value="{{ args.get('certhash','') }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">serial</label>
+        <input class="form-control" name="serial" value="{{ args.get('serial','') }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">dn</label>
+        <input class="form-control" name="dn" value="{{ args.get('dn','') }}">
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">type</label>
+        <input class="form-control" name="type" value="{{ args.get('type','') }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">mapped</label>
+        <select class="form-select" name="mapped">
+          <option value="">Any</option>
+          <option value="true" {% if args.get('mapped')=='true' %}selected{% endif %}>true</option>
+          <option value="false" {% if args.get('mapped')=='false' %}selected{% endif %}>false</option>
+        </select>
+      </div>
+      <div class="col-12 d-flex justify-content-end mt-2">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="text-muted small mb-2">
+  Page {{ results.page }} of {{ results.pages }} | Showing {{ results.items|length }} rows
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 90px;">ID</th>
+          <th style="width: 90px;">Type</th>
+          <th>DN</th>
+          <th style="width: 170px;">Serial</th>
+          <th style="width: 180px;">Valid To</th>
+          <th style="width: 90px;">Assets</th>
+          <th style="width: 110px;">Range</th>
+          <th style="width: 140px;">Mapped</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in results.items %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td><span class="badge text-bg-secondary">{{ c.cert_type }}</span></td>
+          <td class="text-break">{{ c.dn }}</td>
+          <td class="text-break">{{ c.serial_number }}</td>
+          <td>{{ c.valid_to_date }}</td>
+          <td>{{ c.asset_count }}</td>
+          <td><span class="badge text-bg-light border">{{ c.page_range }}</span></td>
+          <td>
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input mapped-toggle"
+                type="checkbox"
+                role="switch"
+                data-cert-id="{{ c.id }}"
+                {% if c.mapped_to_inventory %}checked{% endif %}
+              >
+              <label class="form-check-label small">
+                {% if c.mapped_to_inventory %}Yes{% else %}No{% endif %}
+              </label>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function patchMapped(certId, mapped) {
+  const res = await fetch(`/api/certificates/${certId}/mapped`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mapped_to_inventory: mapped })
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(t || "Update failed");
+  }
+  return await res.json();
+}
+
+document.querySelectorAll(".mapped-toggle").forEach((el) => {
+  el.addEventListener("change", async (e) => {
+    const certId = e.target.getAttribute("data-cert-id");
+    const mapped = e.target.checked;
+
+    // optimistic UI label update
+    const label = e.target.closest(".form-switch").querySelector(".form-check-label");
+    const prev = !mapped;
+    label.textContent = mapped ? "Yes" : "No";
+
+    try {
+      await patchMapped(certId, mapped);
+    } catch (err) {
+      // revert on error
+      e.target.checked = prev;
+      label.textContent = prev ? "Yes" : "No";
+      alert("Failed to update mapped_to_inventory: " + err.message);
+    }
+  });
+});
+</script>
+{% endblock %}

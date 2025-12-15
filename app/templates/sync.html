@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-3">Sync</h3>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <form method="POST" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">certificate.type</label>
+        <input class="form-control" name="filter_value" value="root">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">assetType</label>
+        <input class="form-control" name="asset_type" value="MANAGED">
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary" type="submit">Run Sync Now</button>
+      </div>
+      <div class="col-12">
+        <div class="text-muted small">Commits each page before requesting the next page.</div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if result %}
+<div class="alert alert-success">
+  <div><b>Total inserted:</b> {{ result.total_inserted }}</div>
+  <div><b>Last page attempted:</b> {{ result.last_page_number }}</div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="card-header bg-white">
+    <b>API Logs</b> <span class="text-muted small">(latest 200)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Time</th><th>Endpoint</th><th>Page</th><th>Range</th><th>Status</th><th>Count</th><th>Error</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for l in logs %}
+        <tr>
+          <td class="text-nowrap">{{ l.created_at }}</td>
+          <td>{{ l.endpoint }}</td>
+          <td class="text-nowrap">{{ l.page_number }} / {{ l.page_size }}</td>
+          <td class="text-nowrap">{{ l.page_range }}</td>
+          <td>{{ l.status_code }}</td>
+          <td>{{ l.response_count }}</td>
+          <td class="text-break">{{ l.error_message }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

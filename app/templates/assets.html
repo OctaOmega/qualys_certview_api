@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Assets</h3>
+  <a class="btn btn-outline-secondary" href="/assets/export.csv">Export CSV</a>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <form method="GET" class="row g-2">
+      <div class="col-md-4">
+        <label class="form-label">name</label>
+        <input class="form-control" name="name" value="{{ args.get('name','') }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">uuid</label>
+        <input class="form-control" name="uuid" value="{{ args.get('uuid','') }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">ip</label>
+        <input class="form-control" name="ip" value="{{ args.get('ip','') }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">os</label>
+        <input class="form-control" name="os" value="{{ args.get('os','') }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">cert_id</label>
+        <input class="form-control" name="cert_id" value="{{ args.get('cert_id','') }}">
+      </div>
+      <div class="col-12 d-flex justify-content-end mt-2">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="text-muted small mb-2">
+  Page {{ results.page }} of {{ results.pages }} | Showing {{ results.items|length }} rows
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 90px;">ID</th>
+          <th style="width: 120px;">Cert ID</th>
+          <th style="width: 120px;">Asset ID</th>
+          <th>Name</th>
+          <th style="width: 140px;">Primary IP</th>
+          <th style="width: 240px;">OS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in results.items %}
+        <tr>
+          <td>{{ a.id }}</td>
+          <td>{{ a.certificate_id }}</td>
+          <td>{{ a.asset_id }}</td>
+          <td class="text-break">{{ a.name }}</td>
+          <td>{{ a.primary_ip }}</td>
+          <td class="text-break">{{ a.operating_system }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
