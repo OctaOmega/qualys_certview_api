@@ -75,3 +75,21 @@ class ApiLog(db.Model):
     error_message = db.Column(db.Text, nullable=True)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class QualysAuthToken(db.Model):
+    __tablename__ = "qualys_auth_tokens"
+
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+
+    token_value = db.Column(db.Text, nullable=False)
+
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+
+    valid = db.Column(db.Boolean, nullable=False, default=True)
+
+    # optional tracking
+    auth_url = db.Column(db.String(512), nullable=True)
+    status_code = db.Column(db.Integer, nullable=True)
+    error_message = db.Column(db.Text, nullable=True)

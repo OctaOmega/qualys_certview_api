@@ -28,11 +28,8 @@ def sync_all_certificates(filter_value="root", includes=None, asset_type="MANAGE
     #client = QualysClient(cfg["QUALYS_BASE_URL"], cfg["QUALYS_JWT"], cfg["QUALYS_TIMEOUT_SECS"])
 
     client = QualysClient(
-    cfg["QUALYS_BASE_URL"],
-    cfg["QUALYS_AUTH_URL"],
-    cfg["QUALYS_USERNAME"],
-    cfg["QUALYS_PASSWORD"],
-    cfg["QUALYS_TIMEOUT_SECS"],
+        cfg["QUALYS_BASE_URL"],
+        cfg["QUALYS_TIMEOUT_SECS"],
     )
     
     page_size = cfg["QUALYS_PAGE_SIZE"]
