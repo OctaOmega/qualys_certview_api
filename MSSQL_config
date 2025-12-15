@@ -1,0 +1,53 @@
+Create the SQL table
+If your sheet has columns like SerialNumber, CommonName, CertificateStatus, create a table like:
+
+CREATE TABLE dbo.CertInventory (
+  SerialNumber     NVARCHAR(100) NOT NULL,
+  CommonName       NVARCHAR(255) NULL,
+  CertificateStatus NVARCHAR(50) NULL
+);
+
+Option A (most common): Import using SSMS “Import Data”
+Open SQL Server Management Studio (SSMS) → connect to your database
+Right-click the database → Tasks → Import Data…
+Data source: Microsoft Excel
+Pick the file, select the sheet (e.g., Sheet1$)
+Destination: SQL Server Native Client / Microsoft OLE DB Driver for SQL Server (your server/db)
+Choose Copy data from one or more tables
+
+Either:
+Pick an existing table (like dbo.CertInventory), or
+Let the wizard create a new table (then verify data types)
+
+Run the import
+
+
+Notes:
+Ensure the first row in Excel is headers.
+If SerialNumber has leading zeros, make it a text column in Excel first (or it may get changed).
+
+Option B (recommended for repeatable/clean imports): Save as CSV + BULK INSERT
+Save Excel as CSV (UTF-8) (e.g., certs.csv)
+Put the CSV on the SQL Server machine (or a path SQL Server service can access)
+
+Run:
+
+BULK INSERT dbo.CertInventory
+FROM 'C:\imports\certs.csv'
+WITH (
+  FIRSTROW = 2,
+  FIELDTERMINATOR = ',',
+  ROWTERMINATOR = '0x0a',
+  CODEPAGE = '65001',
+  TABLOCK
+);
+
+
+Option C: Use SSIS (best for enterprise pipelines)
+
+Use SQL Server Data Tools (SSDT) → build an SSIS package:
+Excel Source → Data Conversion/Cleansing → SQL Server Destination.
+Common issues to watch
+Excel mixed data types (some blanks/some text) can import as NULLs. CSV import is often more stable.
+Trailing spaces / hidden characters: you may want to LTRIM(RTRIM()) after import.
+Duplicates: add a unique constraint on SerialNumber if required.
